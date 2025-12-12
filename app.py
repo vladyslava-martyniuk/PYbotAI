@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from openai import OpenAI
 import uvicorn
+from pydantic import BaseModel
 from base import SessionLocal, get_db, Base, engine
+from typing import List, Dict, Optional
 
 import os
 import dotenv
@@ -16,47 +18,65 @@ from pydantic_models import (
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(title="AI API Gateway", version="1.0")
 
-client = OpenAI()
 
 #===НАЛАШТУВАННЯ DOTENV===
 dotenv.load_dotenv()
 
-OPENAI_API_KEY = os.getenv("JWT_SECRET_KEY")
-ALGORITHM = [os.getenv("JWT_ALGORITHM", "HS512")]
+OPENAI_API_KEY_VALUE = os.getenv("OPENAI_API_KEY")
 
-if not OPENAI_API_KEY:
-    raise ValueError("JWT_SECRET_KEY не встановлений")
+if not OPENAI_API_KEY_VALUE:
+    raise ValueError("OPENAI_API_KEY не встановлений у .env")
+
+client = OpenAI(api_key=OPENAI_API_KEY_VALUE)
 
 
 #===ЗАПИТИ ДО ШТУЧНОГО ІНТЕЛЕКТУ===
-#//////////////
-#===CHAT GPT===
-#\\\\\\\\\\\\\\
-def response_to_chatgpt(user_input: str, temperature: float, max_tokens: int):
-    """
-        Отправляет запрос на генерацию текста модели GPT-4.1.
+class AIRequest(BaseModel):
+    query: str
+    temperature: float = 0.7
+    max_tokens: int = 150
 
-        :param user_input: Запрос пользователя (содержимое чата).
-        :param temperature: Уровень креативности (от 0.0 до 2.0).
-        :param max_tokens: Максимальное количество токенов в ответе.
-        :return: Сгенерированный текст.
-        """
-    messages_payload = [
+
+class AIResponse(BaseModel):
+    result: str
+
+
+#===CHAT GPT===
+def response_to_chatgpt(user_input: str, temperature: float, max_tokens: int) -> str:
+    messages_payload: List[Dict[str, str]] = [
         {"role": "user", "content": user_input}
-        ]
+    ]
+
     try:
-        response = client.responses.create(
-            model="GPT-4.1",
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
             messages=messages_payload,
             temperature=temperature,
             max_tokens=max_tokens
         )
-        return response.output_text
+
+        return response.choices[0].message.content
+
     except Exception as e:
         print(f"Помилка під час виклику API: {e}")
-        return "Відбулася помилка при отриманні відповіді"
+        raise HTTPException(status_code=500, detail=f"Помилка OpenAI API: {str(e)}")
+
+
+@app.post("/openai", response_model=AIResponse)
+def run_openai(request: AIRequest):
+    try:
+        result = response_to_chatgpt(
+            user_input=request.query,
+            temperature=request.temperature,
+            max_tokens=request.max_tokens
+        )
+        return AIResponse(result=result)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Невідома помилка: {str(e)}")
 
 
 #===CRUD ДЛЯ USERS===
