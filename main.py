@@ -9,7 +9,7 @@ from settings_ai.openAi_client import response_to_chatgpt
 
 # === DB ===
 from base import Base, engine, get_db
-from models.models import User
+from models.models import User, Role, Review, AiApi, AiApiModel
 from pydantic_models import (
     CreateUser, UserResponse,
     CreateRole, RoleResponse,
