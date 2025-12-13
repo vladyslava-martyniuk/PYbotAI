@@ -1,22 +1,118 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
+import uvicorn
 from pydantic import BaseModel
-from settings_ai.groq_client import ask_groq
+from sqlalchemy.orm import Session
 
-app = FastAPI(title="Groq API", version="1.0")
+# === AI ===
+from settings_ai.groq_client import ask_groq
+from settings_ai.openAi_client import response_to_chatgpt
+
+# === DB ===
+from base import Base, engine, get_db
+from models.models import User
+from pydantic_models import (
+    CreateUser, UserResponse,
+    CreateRole, RoleResponse,
+    CreateReview, ReviewResponse,
+    CreateAiApi, AiApiResponse,
+    CreateAiApiModel, AiApiModelResponse,
+)
+
+
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="AI API Gateway", version="1.0")
+
+# ==================================================
+# ================= OPENAI =========================
+# ==================================================
+
+class AIRequest(BaseModel):
+    query: str
+    temperature: float = 0.7
+    max_tokens: int = 150
+
+
+class AIResponse(BaseModel):
+    result: str
+
+
+@app.post("/openai", response_model=AIResponse)
+def run_openai(request: AIRequest):
+    try:
+        result = response_to_chatgpt(
+            user_input=request.query,
+            temperature=request.temperature,
+            max_tokens=request.max_tokens,
+        )
+        return AIResponse(result=result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================================================
+# ================= GROQ ===========================
+# ==================================================
 
 class GroqRequest(BaseModel):
     query: str
 
+
 class GroqResponse(BaseModel):
     result: str
+
+
 @app.post("/groq", response_model=GroqResponse)
 def run_groq(request: GroqRequest):
     try:
-        result = ask_groq(request.query)  
+        result = ask_groq(request.query)
         return GroqResponse(result=result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+# ==================================================
+# ================= USERS CRUD =====================
+# ==================================================
+
+@app.post("/users", response_model=UserResponse)
+def create_user(
+    user: CreateUser,
+    db: Session = Depends(get_db)
+):
+    new_user = User(**user.dict())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+
+@app.get("/users/{user_id}", response_model=UserResponse)
+def get_user(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@app.delete("/users/{user_id}")
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db)
+):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    db.delete(user)
+    db.commit()
+    return {"status": "deleted"}
+
+
+# ==================================================
+
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app)
+    uvicorn.run("main:app", reload=True)
