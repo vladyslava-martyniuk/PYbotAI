@@ -5,7 +5,8 @@ from pydantic import BaseModel
 
 # === DB ONLY ===
 from base import Base, engine, get_db
-from models.models import User, Role, Review, AiApi, AiApiModel
+from models.models_ai import  AiApi, AiApiModel
+from models.models_users import User, Role, Review
 from pydantic_models import (
     CreateUser, UserResponse,
     CreateRole, RoleResponse,
@@ -45,8 +46,7 @@ def run_openai(request: AIRequest):
 
         result = response_to_chatgpt(
             user_input=request.query,
-            temperature=request.temperature,
-            max_tokens=request.max_tokens,
+         
         )
         return AIResponse(result=result)
 

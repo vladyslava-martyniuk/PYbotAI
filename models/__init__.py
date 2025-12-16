@@ -1,1 +1,1 @@
-from models.models import User, Role, Review, AiApi, AiApiModel
+from models.models_ai import User, Role, Review, AiApi, AiApiModel

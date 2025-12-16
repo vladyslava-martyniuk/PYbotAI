@@ -14,9 +14,9 @@ if config.config_file_name is not None:
 import sys
 sys.path.append(os.path.abspath(os.getcwd()))
 
-from base import Base, SQLALCHEMY_DATABASE_URL  # noqa
-import models.models  # noqa: F401  (ensures models are registered)
-
+from base import Base, SQLALCHEMY_DATABASE_URL  #
+import models.models_ai  
+import models.models_users  
 target_metadata = Base.metadata
 
 def get_url() -> str:
