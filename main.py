@@ -1,13 +1,9 @@
 from fastapi import FastAPI, HTTPException, Depends
+from sqlalchemy.orm import Session
 import uvicorn
 from pydantic import BaseModel
-from sqlalchemy.orm import Session
 
-# === AI ===
-from settings_ai.groq_client import ask_groq
-from settings_ai.openAi_client import response_to_chatgpt
-
-# === DB ===
+# === DB ONLY ===
 from base import Base, engine, get_db
 from models.models import User, Role, Review, AiApi, AiApiModel
 from pydantic_models import (
@@ -18,10 +14,15 @@ from pydantic_models import (
     CreateAiApiModel, AiApiModelResponse,
 )
 
-
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="AI API Gateway", version="1.0")
+
+
+# 🔹 БД створюється ПРИ СТАРТІ
+@app.on_event("startup")
+def startup_event():
+    Base.metadata.create_all(bind=engine)
+    print("✅ Database created / connected")
+
 
 # ==================================================
 # ================= OPENAI =========================
@@ -40,12 +41,15 @@ class AIResponse(BaseModel):
 @app.post("/openai", response_model=AIResponse)
 def run_openai(request: AIRequest):
     try:
+        from settings_ai.openAi_client import response_to_chatgpt
+
         result = response_to_chatgpt(
             user_input=request.query,
             temperature=request.temperature,
             max_tokens=request.max_tokens,
         )
         return AIResponse(result=result)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -65,8 +69,11 @@ class GroqResponse(BaseModel):
 @app.post("/groq", response_model=GroqResponse)
 def run_groq(request: GroqRequest):
     try:
+        from settings_ai.groq_client import ask_groq
+
         result = ask_groq(request.query)
         return GroqResponse(result=result)
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
