@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Регистрация PyBotAi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;">
+    <h2 style="margin-bottom: 20px;">Регистрация</h2>
+    
+    <div style="background-color: rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);">
+        <form method="post" action="/register" style="display: flex; flex-direction: column; gap: 15px;">
+            <input name="username" class="input" placeholder="Логин" required>
+            <input name="password" type="password" class="input" placeholder="Пароль" required>
+            <button class="button" type="submit">Зарегистрироваться</button>
+        </form>
+        <button class="button" onclick="window.location.href='index.html'" style="margin-top: 20px;">На главную</button>
+    </div>
+    
+</body>
+</html>
