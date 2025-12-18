@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PyBotAi — Твій ШІ Помічник</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Привіт! Це наш перший штучний інтелект PyBotAi</h1>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <button class="button" id="loginBtn">Увійти</button>
+        <button class="button" id="registerPageBtn" onclick="window.location.href='/register_page'">Реєстрація</button>
+    </div>
+
+    <div id="loginBox" style="display:none; text-align: center; padding: 20px; border: 1px solid #ccc; max-width: 300px; margin: 20px auto; background-color: rgba(255, 255, 255, 0.1); border-radius: 10px; backdrop-filter: blur(5px);">
+        <input id="username" class="input" placeholder="Логін" style="margin-bottom: 10px; width: 80%;">
+        <input id="password" class="input" type="password" placeholder="Пароль" style="margin-bottom: 10px; width: 80%;">
+        <button class="button" id="sendLogin" style="margin-top: 10px;">Войти</button>
+        <div id="result" style="margin-top: 10px; font-size: 14px;"></div>
+    </div>
+
+    <div class="container">
+        <div id="chatHistory">
+            <div class="bot-message">PyBotAi: Привіт! Я готовий до спілкування. Напиши мені щось!</div>
+        </div>
+        
+        <div class="input-box">
+            <input placeholder="Введіть повідомлення..." class="input" type="text" id="messageInput">
+            <button class="send-btn" id="sendButton">Надіслати</button>
+        </div>
+    </div>
+
+    <footer>
+        PyBotAi &copy; 2024 — Навчальний проєкт
+    </footer>
+
+    <script>
+        const loginBox = document.getElementById("loginBox");
+        const loginBtn = document.getElementById("loginBtn");
+        const sendLogin = document.getElementById("sendLogin");
+        const usernameInput = document.getElementById("username");
+        const passwordInput = document.getElementById("password");
+        const resultDiv = document.getElementById("result");
+        
+        const sendButton = document.getElementById("sendButton");
+        const messageInput = document.getElementById("messageInput");
+        const chatHistory = document.getElementById("chatHistory"); 
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement("div");
+            messageDiv.className = sender === 'user' ? 'user-message' : 'bot-message';
+            messageDiv.innerText = text; 
+            chatHistory.appendChild(messageDiv);
+            
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        if (loginBtn) {
+            loginBtn.onclick = () => {
+                loginBox.style.display = (loginBox.style.display === "none") ? "block" : "none";
+            };
+        }
+
+        if (sendLogin) {
+            sendLogin.onclick = async () => {
+                const data = new FormData();
+                data.append("username", usernameInput.value);
+                data.append("password", passwordInput.value);
+
+                try {
+                    const res = await fetch("/login", {
+                        method: "POST",
+                        body: data
+                    });
+
+                    const result = await res.json();
+                    resultDiv.innerText = result.message;
+                    if (res.ok) {
+                        resultDiv.style.color = "#00ffc4";
+                        setTimeout(() => loginBox.style.display = "none", 1500);
+                    } else {
+                        resultDiv.style.color = "#ff4d4d";
+                    }
+                } catch (error) {
+                    resultDiv.innerText = "Помилка підключення до сервера.";
+                }
+            };
+        }
+        
+        async function handleSendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            addMessage("Ви: " + message, 'user');
+            messageInput.value = ''; 
+
+            const chatData = new FormData();
+            chatData.append("message", message);
+
+            try {
+                const res = await fetch("/send_message", {
+                    method: "POST",
+                    body: chatData
+                });
+                
+                const result = await res.json();
+                
+                if (result.status === "success") {
+                    addMessage("PyBotAi: " + result.response, 'bot');
+                } else {
+                    addMessage("Помилка: " + result.message, 'bot');
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                addMessage("Помилка підключення до сервера ШІ.", 'bot');
+            }
+        }
+
+        if (sendButton) {
+            sendButton.onclick = (e) => {
+                e.preventDefault();
+                handleSendMessage();
+            };
+        }
+
+        messageInput.onkeypress = (e) => {
+            if (e.key === 'Enter') {
+                handleSendMessage();
+            }
+        };
+    </script>
+</body>
+</html>

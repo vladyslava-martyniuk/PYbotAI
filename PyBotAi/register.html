@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Реєстрація PyBotAi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh;">
+    
+    <h2 style="margin-bottom: 20px;">Реєстрація користувача</h2>
+    
+    <div style="background-color: rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); backdrop-filter: blur(5px); width: 300px;">
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <input id="regUsername" name="username" class="input" placeholder="Вигадайте логін" required>
+            <input id="regPassword" name="password" type="password" class="input" placeholder="Вигадайте пароль" required>
+            <button class="button" id="btnDoRegister">Зареєструватися</button>
+        </div>
+        
+        <div id="regStatus" style="margin-top: 15px; text-align: center; font-size: 14px;"></div>
+
+        <button class="button" onclick="window.location.href='/'" style="margin-top: 20px; width: 100%; background-color: #555;">На головну</button>
+    </div>
+
+    <script>
+        const btn = document.getElementById("btnDoRegister");
+        const status = document.getElementById("regStatus");
+
+        btn.onclick = async () => {
+            const user = document.getElementById("regUsername").value;
+            const pass = document.getElementById("regPassword").value;
+
+            if (!user || !pass) {
+                status.innerText = "Заповніть усі поля!";
+                status.style.color = "#ff4d4d";
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("username", user);
+            formData.append("password", pass);
+
+            try {
+                const response = await fetch("/register", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const text = await response.text();
+
+                if (response.ok) {
+                    status.innerText = "Успіх! Зараз ви повернетесь на головну...";
+                    status.style.color = "#00ffc4";
+                    // Перенаправляємо на головну через 2 секунди
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 2000);
+                } else {
+                    status.innerText = text; // Виведе "Користувач вже існує" тощо
+                    status.style.color = "#ff4d4d";
+                }
+            } catch (e) {
+                status.innerText = "Помилка зв'язку з сервером";
+                status.style.color = "#ff4d4d";
+            }
+        };
+    </script>
+</body>
+</html>
