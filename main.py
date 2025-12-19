@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request, Form, HTMLResponse
 from sqlalchemy.orm import Session
 import uvicorn
 from pydantic import BaseModel
@@ -20,8 +20,8 @@ from services.openAi_service import OpenAiService
 from services.groq_service import GroqService
 
 
-app = FastAPI(title="AI API Gateway", version="1.0")
-
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
 
 # ==================================================
 # ================= STARTUP ========================
@@ -49,7 +49,7 @@ class AIResponse(BaseModel):
     result: str
 
 
-@app.post("/openai", response_model=AIResponse)
+@app.post("/openai", response_model=AIResponse, response_class=HTMLResponse)
 def run_openai(request: AIRequest):
     try:
         service = app.state.openai_service
@@ -76,7 +76,7 @@ class GroqResponse(BaseModel):
     result: str
 
 
-@app.post("/groq", response_model=GroqResponse)
+@app.post("/groq", response_model=GroqResponse, response_class=HTMLResponse)
 def run_groq(request: GroqRequest):
     try:
         service = app.state.groq_service
@@ -85,13 +85,18 @@ def run_groq(request: GroqRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+# ==================================================
+# ================= INDEX =========================
+# ==================================================
 
-
+@app.get("/", response_class=HTMLResponse)
+def index():
+    return templates.TemplateResponse("index.html", {"request": Request()})
 # ==================================================
 # ================= USERS CRUD =====================
 # ==================================================
 
-@app.post("/users", response_model=UserResponse)
+@app.post("/users", response_model=UserResponse, response_class=HTMLResponse)
 def create_user(user: CreateUser, db: Session = Depends(get_db)):
     new_user = User(**user.dict())
     db.add(new_user)
@@ -100,7 +105,7 @@ def create_user(user: CreateUser, db: Session = Depends(get_db)):
     return new_user
 
 
-@app.get("/users/{user_id}", response_model=UserResponse)
+@app.get("/users/{user_id}", response_model=UserResponse, response_class=HTMLResponse)
 def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -108,7 +113,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     return user
 
 
-@app.delete("/users/{user_id}")
+@app.delete("/users/{user_id}", response_class=HTMLResponse)
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
