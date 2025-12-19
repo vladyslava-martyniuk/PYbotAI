@@ -3,9 +3,9 @@ from sqlalchemy.orm import Session
 import uvicorn
 from pydantic import BaseModel
 
-# === DB ONLY ===
+# === DB ===
 from base import Base, engine, get_db
-from models.models_ai import  AiApi, AiApiModel
+from models.models_ai import AiApi, AiApiModel
 from models.models_users import User, Role, Review
 from pydantic_models import (
     CreateUser, UserResponse,
@@ -15,12 +15,22 @@ from pydantic_models import (
     CreateAiApiModel, AiApiModelResponse,
 )
 
+# === SERVICES ===
+from services.openAi_service import OpenAiService
+from services.groq_service import GroqService
+
+
 app = FastAPI(title="AI API Gateway", version="1.0")
 
 
-# 🔹 БД створюється ПРИ СТАРТІ
+# ==================================================
+# ================= STARTUP ========================
+# ==================================================
+
 @app.on_event("startup")
 def startup_event():
+    app.state.openai_service = OpenAiService()
+    app.state.groq_service = GroqService()
     Base.metadata.create_all(bind=engine)
     print("✅ Database created / connected")
 
@@ -42,11 +52,11 @@ class AIResponse(BaseModel):
 @app.post("/openai", response_model=AIResponse)
 def run_openai(request: AIRequest):
     try:
-        from settings_ai.openAi_client import response_to_chatgpt
-
-        result = response_to_chatgpt(
-            user_input=request.query,
-         
+        service = app.state.openai_service
+        result = service.ask(
+            prompt=request.query,
+            temperature=request.temperature,
+            max_tokens=request.max_tokens,
         )
         return AIResponse(result=result)
 
@@ -69,9 +79,8 @@ class GroqResponse(BaseModel):
 @app.post("/groq", response_model=GroqResponse)
 def run_groq(request: GroqRequest):
     try:
-        from settings_ai.groq_client import ask_groq
-
-        result = ask_groq(request.query)
+        service = app.state.groq_service
+        result = service.ask(request.query)
         return GroqResponse(result=result)
 
     except Exception as e:
@@ -83,10 +92,7 @@ def run_groq(request: GroqRequest):
 # ==================================================
 
 @app.post("/users", response_model=UserResponse)
-def create_user(
-    user: CreateUser,
-    db: Session = Depends(get_db)
-):
+def create_user(user: CreateUser, db: Session = Depends(get_db)):
     new_user = User(**user.dict())
     db.add(new_user)
     db.commit()
@@ -95,10 +101,7 @@ def create_user(
 
 
 @app.get("/users/{user_id}", response_model=UserResponse)
-def get_user(
-    user_id: int,
-    db: Session = Depends(get_db)
-):
+def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -106,10 +109,7 @@ def get_user(
 
 
 @app.delete("/users/{user_id}")
-def delete_user(
-    user_id: int,
-    db: Session = Depends(get_db)
-):
+def delete_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

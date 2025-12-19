@@ -1,4 +1,5 @@
-from ai_handle_service import AIHandleService
+from services.ai_handle_service import AIHandleService
+
 from settings_ai.groq_client import GroqAiClient
 from xai_sdk.chat import user, system
 

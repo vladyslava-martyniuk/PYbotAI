@@ -1,5 +1,6 @@
-from ai_handle_service import AIHandleService
+from services.ai_handle_service import AIHandleService
 from settings_ai.openAi_client import OpenAiClient
+
 
 class OpenAiService(AIHandleService):
     def __init__(self):

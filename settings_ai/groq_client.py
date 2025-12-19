@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from abstract_ai import AIClient
+from settings_ai.abstract_ai import AIClient
 load_dotenv() 
 
 
