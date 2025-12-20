@@ -8,15 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pydantic import BaseModel
 
 from base import Base, engine, get_db
-from models.models_ai import AiApi, AiApiModel
-from models.models_users import User, Role, Review
-from pydantic_models import (
-    CreateUser, UserResponse,
-    CreateRole, RoleResponse,
-    CreateReview, ReviewResponse,
-    CreateAiApi, AiApiResponse,
-    CreateAiApiModel, AiApiModelResponse,
-)
+from models.models_users import User
 
 # === Сервіси ШІ ===
 from services.openAi_service import OpenAiService
