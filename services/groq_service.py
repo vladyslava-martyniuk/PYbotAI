@@ -1,16 +1,19 @@
-from services.ai_handle_service import AIHandleService
-
 from settings_ai.groq_client import GroqAiClient
-from xai_sdk.chat import user, system
 
-class GroqService(AIHandleService):
+class GroqService:
     def __init__(self):
-        super().__init__(GroqAiClient())
+        self.client = GroqAiClient().create_client()
 
-    def send_request(self, model_name: str, prompt: str) -> str:
-        chat = self.client.chat.create(model="grok-4")
-        chat.append(user("What is the meaning of life, the universe, and everything?"))
-        response = chat.sample()
-        print(response.content)
+    def send_request(self, model_name: str, prompt: str, temperature: float = 0.7, max_tokens: int = 150) -> str:
+        print("Groq Prompt:", prompt)
+        response = self.client.chat.completions.create(
+            model=model_name,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
+        print("Groq Full response:", response)
+        return response.choices[0].message.content
 
-        return response.output_text
+    def ask(self, prompt: str) -> str:
+        return self.send_request("groq-4", prompt)

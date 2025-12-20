@@ -1,15 +1,18 @@
-from services.ai_handle_service import AIHandleService
 from settings_ai.openAi_client import OpenAiClient
 
-
-class OpenAiService(AIHandleService):
+class OpenAiService:
     def __init__(self):
-        super().__init__(OpenAiClient())
+        self.client = OpenAiClient().create_client()
 
     def send_request(self, model_name: str, prompt: str) -> str:
-        response = self.client.responses.create(
+        print("OpenAI Prompt:", prompt)
+        response = self.client.chat.completions.create(
             model=model_name,
-            input=prompt
+            messages=[{"role": "user", "content": prompt}]
         )
+        print("OpenAI Full response:", response)
+        return response.choices[0].message.content
 
-        return response.output_text
+    def ask(self, prompt: str) -> str:
+        return self.send_request("gpt-4", prompt)
+
