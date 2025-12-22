@@ -1,24 +1,22 @@
-# services/groq_service.py
 from settings_ai.groq_client import GroqAiClient
 
 class GroqService:
     def __init__(self):
-        # Ініціалізація нового Groq клієнта
         self.client = GroqAiClient().create_client()
 
     def send_request(self, model_name: str, prompt: str) -> str:
         try:
-            # Новий формат SDK: author замість role
             response = self.client.chat.completions.create(
                 model=model_name,
-                messages=[{"author": "user", "content": prompt}],
-                max_output_tokens=150
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant."},
+                    {"role": "user", "content": prompt}
+                ]
             )
-            # Витягуємо текст відповіді
-            return response.choices[0].content[0].text
+            return response.choices[0].message.content.strip()
         except Exception as e:
             return f"Помилка сервера: {str(e)}"
 
     def ask(self, prompt: str) -> str:
-        # Використовуємо модель Groq
-        return self.send_request("groq-4", prompt)
+        # Використай офіційну модель Groq, наприклад:
+        return self.send_request("mixtral-8x7b-32768", prompt)

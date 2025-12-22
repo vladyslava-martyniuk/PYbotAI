@@ -63,10 +63,11 @@ document.getElementById("doLogin").onclick = async () => {
 };
 
 // =================== Чат ===================
-const chatHistory = document.getElementById("chatHistory");
-const sendButton = document.getElementById("sendMsg");
 const chatInput = document.getElementById("chatInput");
+const sendButton = document.getElementById("sendMsg");
+const chatHistoryUser = document.getElementById("chatHistoryUser");
 
+// Надсилання повідомлення
 sendButton.onclick = async () => {
     const message = chatInput.value.trim();
     if (!message) return;
@@ -77,47 +78,34 @@ sendButton.onclick = async () => {
     const userDiv = document.createElement("div");
     userDiv.className = "user-message";
     userDiv.innerText = `${nickname}: ${message}`;
-    chatHistory.appendChild(userDiv);
-    chatHistory.scrollTop = chatHistory.scrollHeight;
+    chatHistoryUser.appendChild(userDiv);
 
-    // Читаємо обраний сервіс ШІ
-    const serviceRadios = document.getElementsByName("aiService");
-    let selectedService = "openai"; // дефолт
-    for (const radio of serviceRadios) {
-        if (radio.checked) selectedService = radio.value;
-    }
+    // Список сервісів
+    const services = ["openai", "groq", "gemini"];
 
-    // Відправляємо запит на бекенд
-    const data = {
-        query: message,
-        service: selectedService,
-        temperature: 0.7,
-        max_tokens: 150
-    };
-
-    try {
-        const res = await fetch("/send_message", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        });
-        const json = await res.json();
-
+    for (const service of services) {
+        const chatDiv = document.getElementById(`${service}Chat`);
         const botDiv = document.createElement("div");
         botDiv.className = "bot-message";
-        if (json.result) {
-            botDiv.innerText = `PyBotAi [${selectedService.toUpperCase()}]: ${json.result}`;
-        } else {
-            botDiv.innerText = `PyBotAi [${selectedService.toUpperCase()}]: Помилка ШІ`;
+        botDiv.innerText = `⏳ ${service.toUpperCase()} думає...`;
+        chatDiv.appendChild(botDiv);
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+
+        // Відправляємо на бекенд
+        const data = { query: message, service: service, temperature: 0.7, max_tokens: 150 };
+        try {
+            const res = await fetch("/send_message", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            const json = await res.json();
+            botDiv.innerText = json.result ? `PyBotAi: ${json.result}` : "Помилка ШІ";
+        } catch (e) {
+            botDiv.innerText = "Помилка сервера";
         }
-        chatHistory.appendChild(botDiv);
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-    } catch (e) {
-        const botDiv = document.createElement("div");
-        botDiv.className = "bot-message";
-        botDiv.innerText = `PyBotAi [${selectedService.toUpperCase()}]: Помилка сервера`;
-        chatHistory.appendChild(botDiv);
-        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        chatDiv.scrollTop = chatDiv.scrollHeight;
     }
 
     chatInput.value = "";

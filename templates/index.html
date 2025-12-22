@@ -32,19 +32,24 @@
 
 <!-- Чат -->
 <div id="chatBox">
-    <div id="chatHistory">
-        <div class="bot-message">PyBotAi: Привіт! Я готовий до спілкування.</div>
+    <div id="chatHistoryUser">
+        <div class="user-message">PyBotAi: Привіт! Я готовий до спілкування.</div>
     </div>
 
-    <!-- Вибір сервісу ШІ через radio buttons -->
-    <div style="margin: 10px 0;">
-        <span>Обрати сервіс ШІ:</span><br>
-        <input type="radio" id="openai" name="aiService" value="openai" checked>
-        <label for="openai">OpenAI</label>
-        <input type="radio" id="groq" name="aiService" value="groq">
-        <label for="groq">Groq</label>
-        <input type="radio" id="gemini" name="aiService" value="gemini">
-        <label for="gemini">Gemini</label>
+    <!-- Три блоки для кожного ШІ -->
+    <div id="aiResponses" style="display: flex; gap: 10px; margin-top: 10px;">
+        <div id="openaiBox" class="ai-box">
+            <h4>OpenAI</h4>
+            <div class="ai-chat" id="openaiChat"></div>
+        </div>
+        <div id="groqBox" class="ai-box">
+            <h4>Groq</h4>
+            <div class="ai-chat" id="groqChat"></div>
+        </div>
+        <div id="geminiBox" class="ai-box">
+            <h4>Gemini</h4>
+            <div class="ai-chat" id="geminiChat"></div>
+        </div>
     </div>
 
     <input id="chatInput" placeholder="Напишіть повідомлення...">

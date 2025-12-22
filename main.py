@@ -142,7 +142,7 @@ def send_message_ai(request: AIRequest):
 
     result = service.ask(request.query)
     return AIResponse(result=f"PyBotAi [{request.service.upper()}]: {result}")
-
+ 
 
 if __name__ == "__main__":
     import uvicorn
