@@ -15,7 +15,7 @@ class OpenAiService:
     def ask(self, prompt: str) -> str:
         try:
             response = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",  # або "gpt-4" якщо у тебе доступ
+                model="gpt-3.5-mini",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.7,
                 max_tokens=150

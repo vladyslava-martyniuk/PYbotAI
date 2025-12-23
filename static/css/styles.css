@@ -1,184 +1,169 @@
-/* ===== ОСНОВА ===== */
-body {
+/* ================= RESET ================= */
+* {
     margin: 0;
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: radial-gradient(circle at center, #08162e 0%, #020617 70%);
-    color: #e6f1ff;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", system-ui, sans-serif;
+}
+body {
+    min-height: 100vh;
+    /* Живий градієнт */
+    background: linear-gradient(120deg, #ffe6f0, #e0f7ff, #fffbe6, #e6ffe6);
+    background-size: 600% 600%;
+    animation: gradientBG 20s ease infinite;
+    color: var(--text-main);
+    padding: 30px;
 }
 
-/* ===== ЗАГОЛОВОК ===== */
+/* Анімація градієнта */
+@keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
+
+/* ================= COLORS ================= */
+:root {
+    --bg-main: rgba(255,255,255,0.8);
+    --bg-card: #ffffff;
+    --accent: #5fb3a2;        /* м’ятний */
+    --accent-2: #f4a261;      /* теплий помаранч */
+    --text-main: #2e2e2e;
+    --text-muted: #6f6f6f;
+    --border: #e2ded8;
+}
+
+/* ================= HEADER ================= */
 h1 {
     text-align: center;
-    padding: 20px;
-    margin: 0;
-    background: linear-gradient(90deg, #6a00ff, #8f2bff);
-    box-shadow: 0 0 20px rgba(140, 0, 255, 0.6);
+    margin-bottom: 20px;
+    font-size: 32px;
 }
 
-/* ===== КНОПКИ ВХОДУ ===== */
-#loginBtn,
-#registerBtn {
+/* ================= BUTTONS ================= */
+button {
     padding: 10px 18px;
-    margin: 5px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: none;
-    cursor: pointer;
-    background: linear-gradient(135deg, #7b00ff, #00b3ff);
+    background: var(--accent);
     color: white;
-    font-weight: bold;
-    box-shadow: 0 0 10px rgba(0, 170, 255, 0.6);
-    transition: 0.2s;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-#loginBtn:hover,
-#registerBtn:hover {
-    transform: scale(1.05);
+button:hover {
+    background: #4aa090;
+    transform: translateY(-1px);
 }
 
-/* ===== ЛОГІН / РЕЄСТРАЦІЯ ===== */
+#logoutBtn {
+    background: var(--accent-2);
+}
+
+#logoutBtn:hover {
+    background: #e8904c;
+}
+
+/* ================= INPUTS ================= */
+input {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+    width: 100%;
+    font-size: 14px;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+/* ================= LOGIN / REGISTER ================= */
 #loginBox,
 #registerBox {
-    width: 300px;
-    margin: 15px auto;
-    padding: 15px;
-    background: rgba(5, 10, 30, 0.85);
-    border-radius: 12px;
-    box-shadow: 0 0 20px rgba(0, 140, 255, 0.25);
-    text-align: center;
-}
-
-#loginBox input,
-#registerBox input {
-    width: 90%;
-    padding: 8px;
-    margin-bottom: 10px;
-    border-radius: 6px;
-    border: none;
-    background: #0a1a3a;
-    color: white;
-}
-
-#loginBox button,
-#registerBox button {
-    margin-top: 5px;
-}
-
-/* ===== ЧАТ ===== */
-#chatBox {
-    width: 95%;
-    max-width: 1400px;
-    margin: 30px auto;
-    background: rgba(5, 10, 30, 0.85);
-    border-radius: 15px;
+    max-width: 300px;
+    margin: 20px auto;
+    background: var(--bg-card);
     padding: 20px;
-    box-shadow: 0 0 40px rgba(0, 140, 255, 0.25);
+    border-radius: 14px;
+    border: 1px solid var(--border);
 }
 
-/* ===== ІСТОРІЯ КОРИСТУВАЧА ===== */
+/* ================= CHAT ================= */
+#chatBox {
+    max-width: 1100px;
+    margin: 30px auto;
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+}
+
+/* ================= CHAT HISTORY ================= */
 #chatHistoryUser {
+    background: #faf9f7;
     padding: 12px;
-    margin-bottom: 15px;
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.4);
-    min-height: 50px;
-}
-
-/* ===== БЛОКИ ШІ ===== */
-#aiResponses {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-/* ===== ОКРЕМИЙ ШІ-БЛОК ===== */
-.ai-box {
-    flex: 1;
-    background: rgba(10, 20, 50, 0.85);
     border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 0 15px rgba(0, 120, 255, 0.25);
+    margin-bottom: 15px;
+}
+
+.bot-message {
+    background: #eaeaea;
+    padding: 10px 14px;
+    border-radius: 10px;
+    width: fit-content;
+}
+
+/* ================= AI BLOCKS ================= */
+#aiResponses {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+/* ================= AI BOX ================= */
+.ai-box {
+    background: #fafafa;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
 }
 
-/* Заголовок ШІ */
 .ai-box h4 {
     text-align: center;
-    margin: 0 0 10px 0;
-    color: #9ad7ff;
-    text-shadow: 0 0 8px rgba(0, 200, 255, 0.6);
+    margin-bottom: 10px;
+    color: var(--accent);
 }
 
-/* Чат ШІ */
+/* ================= AI CHAT ================= */
 .ai-chat {
     flex: 1;
-    background: rgba(0, 0, 0, 0.35);
-    border-radius: 8px;
-    padding: 8px;
-    margin-bottom: 8px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
     overflow-y: auto;
     font-size: 14px;
 }
 
-/* Інпут ШІ */
+/* ================= AI INPUT ================= */
 .ai-input {
-    padding: 8px;
-    margin-bottom: 6px;
-    border-radius: 6px;
-    border: none;
-    background: #0a1a3a;
-    color: white;
+    margin-bottom: 8px;
 }
 
-/* ===== СПІЛЬНИЙ ІНПУТ ===== */
+/* ================= COMMON INPUT ================= */
 #chatInput {
-    width: 75%;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    background: #0a1a3a;
-    color: white;
+    margin-top: 15px;
 }
 
-/* ===== КНОПКИ ===== */
-button {
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    background: linear-gradient(135deg, #7b00ff, #00b3ff);
-    color: white;
-    font-weight: bold;
-    box-shadow: 0 0 10px rgba(0, 170, 255, 0.6);
-    transition: 0.2s;
-}
-
-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 18px rgba(0, 170, 255, 0.9);
-}
-
-/* ===== ПОВІДОМЛЕННЯ ===== */
-.user-message {
-    color: #9ad7ff;
-    margin-bottom: 6px;
-}
-
-.bot-message {
-    color: #ffffff;
-    margin-bottom: 6px;
-    text-shadow: 0 0 5px rgba(0, 200, 255, 0.4);
-}
-
-/* ===== АДАПТИВ ===== */
-@media (max-width: 900px) {
-    #aiResponses {
-        flex-direction: column;
-    }
-
-    #chatInput {
-        width: 100%;
-        margin-bottom: 10px;
-    }
+/* ================= FOOTER ================= */
+footer {
+    margin-top: 30px;
+    color: var(--text-muted);
+    font-size: 14px;
 }

@@ -4,13 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PyBotAi — Твій ШІ Помічник</title>
- <link rel="stylesheet" href="../static/css/styles.css">
+   <link rel="stylesheet" href="../static/css/styles.css">
 
 </head>
 <body>
 
 <h1>Привіт! PyBotAi готовий до спілкування</h1>
+
 <div id="greeting" style="text-align:center; margin-bottom:20px; font-weight:bold;"></div>
+
 <div style="text-align:center; margin-bottom:20px;">
     <button id="loginBtn">Увійти</button>
     <button id="registerBtn">Реєстрація</button>
@@ -29,13 +31,14 @@
 <div id="registerBox" style="display:none;">
     <input id="regUsername" placeholder="Логін">
     <input id="regPassword" type="password" placeholder="Пароль">
+    <input id="regEmail" type="email" placeholder="Email">
+    <input id="regAge" type="number" placeholder="Вік">
     <button id="doRegister">Зареєструватися</button>
     <div id="regResult"></div>
 </div>
 
 <!-- Чат -->
 <div id="chatBox">
-
     <!-- Повідомлення користувача -->
     <div id="chatHistoryUser">
         <div class="bot-message">PyBotAi: Привіт! Я готовий до спілкування.</div>
@@ -71,11 +74,12 @@
     <!-- СПІЛЬНИЙ ІНПУТ (для всіх ШІ) -->
     <input id="chatInput" placeholder="Повідомлення для ВСІХ ШІ">
     <button id="sendMsg">Надіслати всім</button>
-
 </div>
-<footer>
+
+<footer style="text-align:center; margin-top:20px;">
     <p>© 2025 PyBotAi. Усі права захищено.</p>
 </footer>
+
 <script src="/static/js/index.js"></script>
 </body>
 </html>
