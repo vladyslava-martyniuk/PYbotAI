@@ -49,7 +49,12 @@
         <!-- OpenAI -->
         <div class="ai-box">
             <h4>OpenAI</h4>
-            <div class="ai-chat" id="openaiChat"></div>
+            <div class="ai-chat" id="openaiChat"></div> 
+            <select name="" id="openaiModel">
+                {% for model in openai_models %}
+                 <option value="{{model}}">{{model}}</option>
+                {% endfor %}
+            </select> 
             <input class="ai-input" id="openaiInput" placeholder="Повідомлення для OpenAI">
             <button onclick="sendSingle('openai')">Надіслати</button>
         </div>
@@ -57,7 +62,12 @@
         <!-- Groq -->
         <div class="ai-box">
             <h4>Groq</h4>
-            <div class="ai-chat" id="groqChat"></div>
+            <div class="ai-chat" id="groqChat"></div> 
+            <select name="" id="groqModel">
+               {% for model in groq_models %}
+                 <option value="{{model}}">{{model}}</option>
+                {% endfor %}
+                </select> 
             <input class="ai-input" id="groqInput" placeholder="Повідомлення для Groq">
             <button onclick="sendSingle('groq')">Надіслати</button>
         </div>
@@ -65,7 +75,12 @@
         <!-- Gemini -->
         <div class="ai-box">
             <h4>Gemini</h4>
-            <div class="ai-chat" id="geminiChat"></div>
+            <div class="ai-chat" id="geminiChat"></div> 
+            <select name="" id="geminiModel">
+                {% for model in gemini_models %}
+                 <option value="{{model}}">{{model}}</option>
+                {% endfor %}
+                </select>  
             <input class="ai-input" id="geminiInput" placeholder="Повідомлення для Gemini">
             <button onclick="sendSingle('gemini')">Надіслати</button>
         </div>

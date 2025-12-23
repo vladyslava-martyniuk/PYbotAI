@@ -156,16 +156,18 @@ sendButton.onclick = async () => {
 
 async function sendSingle(service) {
     const input = document.getElementById(`${service}Input`);
+    const modelSelect = document.getElementById(`${service}Model`);
+    const model = modelSelect.value;
     const message = input.value.trim();
     if (!message) return;
 
     addUserMessage(`[${service.toUpperCase()}] ${message}`);
-    await sendToAI(service, message);
+    await sendToAI(service, message, model);
 
     input.value = "";
 }
 
-async function sendToAI(service, message) {
+async function sendToAI(service, message, model) {
     const chatDiv = document.getElementById(`${service}Chat`);
     const botDiv = document.createElement("div");
     botDiv.className = "bot-message";
@@ -179,8 +181,7 @@ async function sendToAI(service, message) {
             body: JSON.stringify({
                 query: message,
                 service: service,
-                temperature: 0.7,
-                max_tokens: 150
+                model: model
             })
         });
         const json = await res.json();
@@ -198,10 +199,11 @@ async function sendToAI(service, message) {
 // =================== Фідбек ===================
 function addFeedback(botDiv, service) {
     const feedbackDiv = document.createElement("div");
-    feedbackDiv.style.marginTop = "5px";
+    feedbackDiv.style.margin = "5px";
 
     const thumbsUp = document.createElement("button");
     thumbsUp.innerText = "👍";
+    thumbsUp.style.marginRight = "5px";
     thumbsUp.onclick = () => sendFeedback(service, botDiv, "like");
 
     const thumbsDown = document.createElement("button");
