@@ -4,14 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PyBotAi — Твій ШІ Помічник</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+ <link rel="stylesheet" href="../static/css/styles.css">
+
 </head>
 <body>
-<h1>Привіт! PyBotAi готовий до спілкування</h1>
 
+<h1>Привіт! PyBotAi готовий до спілкування</h1>
+<div id="greeting" style="text-align:center; margin-bottom:20px; font-weight:bold;"></div>
 <div style="text-align:center; margin-bottom:20px;">
     <button id="loginBtn">Увійти</button>
     <button id="registerBtn">Реєстрація</button>
+    <button id="logoutBtn">Вийти</button>
 </div>
 
 <!-- Логін -->
@@ -32,30 +35,47 @@
 
 <!-- Чат -->
 <div id="chatBox">
+
+    <!-- Повідомлення користувача -->
     <div id="chatHistoryUser">
-        <div class="user-message">PyBotAi: Привіт! Я готовий до спілкування.</div>
+        <div class="bot-message">PyBotAi: Привіт! Я готовий до спілкування.</div>
     </div>
 
-    <!-- Три блоки для кожного ШІ -->
+    <!-- Блоки ШІ -->
     <div id="aiResponses" style="display: flex; gap: 10px; margin-top: 10px;">
-        <div id="openaiBox" class="ai-box">
+        <!-- OpenAI -->
+        <div class="ai-box">
             <h4>OpenAI</h4>
             <div class="ai-chat" id="openaiChat"></div>
+            <input class="ai-input" id="openaiInput" placeholder="Повідомлення для OpenAI">
+            <button onclick="sendSingle('openai')">Надіслати</button>
         </div>
-        <div id="groqBox" class="ai-box">
+
+        <!-- Groq -->
+        <div class="ai-box">
             <h4>Groq</h4>
             <div class="ai-chat" id="groqChat"></div>
+            <input class="ai-input" id="groqInput" placeholder="Повідомлення для Groq">
+            <button onclick="sendSingle('groq')">Надіслати</button>
         </div>
-        <div id="geminiBox" class="ai-box">
+
+        <!-- Gemini -->
+        <div class="ai-box">
             <h4>Gemini</h4>
             <div class="ai-chat" id="geminiChat"></div>
+            <input class="ai-input" id="geminiInput" placeholder="Повідомлення для Gemini">
+            <button onclick="sendSingle('gemini')">Надіслати</button>
         </div>
     </div>
 
-    <input id="chatInput" placeholder="Напишіть повідомлення...">
-    <button id="sendMsg">Надіслати</button>
-</div>
+    <!-- СПІЛЬНИЙ ІНПУТ (для всіх ШІ) -->
+    <input id="chatInput" placeholder="Повідомлення для ВСІХ ШІ">
+    <button id="sendMsg">Надіслати всім</button>
 
+</div>
+<footer>
+    <p>© 2025 PyBotAi. Усі права захищено.</p>
+</footer>
 <script src="/static/js/index.js"></script>
 </body>
 </html>
