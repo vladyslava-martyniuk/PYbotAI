@@ -1,0 +1,169 @@
+/* ================= RESET ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Segoe UI", system-ui, sans-serif;
+}
+body {
+    min-height: 100vh;
+    /* Живий градієнт */
+    background: linear-gradient(120deg, #ffe6f0, #e0f7ff, #fffbe6, #e6ffe6);
+    background-size: 600% 600%;
+    animation: gradientBG 20s ease infinite;
+    color: var(--text-main);
+    padding: 30px;
+}
+
+/* Анімація градієнта */
+@keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
+
+/* ================= COLORS ================= */
+:root {
+    --bg-main: rgba(255,255,255,0.8);
+    --bg-card: #ffffff;
+    --accent: #5fb3a2;        /* м’ятний */
+    --accent-2: #f4a261;      /* теплий помаранч */
+    --text-main: #2e2e2e;
+    --text-muted: #6f6f6f;
+    --border: #e2ded8;
+}
+
+/* ================= HEADER ================= */
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 32px;
+}
+
+/* ================= BUTTONS ================= */
+button {
+    padding: 10px 18px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background: #4aa090;
+    transform: translateY(-1px);
+}
+
+#logoutBtn {
+    background: var(--accent-2);
+}
+
+#logoutBtn:hover {
+    background: #e8904c;
+}
+
+/* ================= INPUTS ================= */
+input {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+    width: 100%;
+    font-size: 14px;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+/* ================= LOGIN / REGISTER ================= */
+#loginBox,
+#registerBox {
+    max-width: 300px;
+    margin: 20px auto;
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+}
+
+/* ================= CHAT ================= */
+#chatBox {
+    max-width: 1100px;
+    margin: 30px auto;
+    background: var(--bg-card);
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+}
+
+/* ================= CHAT HISTORY ================= */
+#chatHistoryUser {
+    background: #faf9f7;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+
+.bot-message {
+    background: #eaeaea;
+    padding: 10px 14px;
+    border-radius: 10px;
+    width: fit-content;
+}
+
+/* ================= AI BLOCKS ================= */
+#aiResponses {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+/* ================= AI BOX ================= */
+.ai-box {
+    background: #fafafa;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+}
+
+.ai-box h4 {
+    text-align: center;
+    margin-bottom: 10px;
+    color: var(--accent);
+}
+
+/* ================= AI CHAT ================= */
+.ai-chat {
+    flex: 1;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    overflow-y: auto;
+    font-size: 14px;
+}
+
+/* ================= AI INPUT ================= */
+.ai-input {
+    margin-bottom: 8px;
+}
+
+/* ================= COMMON INPUT ================= */
+#chatInput {
+    margin-top: 15px;
+}
+
+/* ================= FOOTER ================= */
+footer {
+    margin-top: 30px;
+    color: var(--text-muted);
+    font-size: 14px;
+}

@@ -1,7 +1,6 @@
 from pydantic import BaseModel
-
-
-#===USERS===
+from typing import Optional
+# ===== USERS =====
 class CreateUser(BaseModel):
     username: str
     email: str
@@ -17,7 +16,7 @@ class UserResponse(BaseModel):
     username: str
     email: str
     password: str
-    date_of_birth: str
+    age: Optional[int] = None
     role_id: int
     session: str
     is_baned: bool
@@ -25,8 +24,7 @@ class UserResponse(BaseModel):
     class Config:
         orm_mode = True
 
-
-#===ROLES===
+# ===== ROLES =====
 class CreateRole(BaseModel):
     name: str
 
@@ -38,8 +36,7 @@ class RoleResponse(BaseModel):
     class Config:
         orm_mode = True
 
-
-#===REVIEWS===
+# ===== REVIEWS =====
 class CreateReview(BaseModel):
     user_id: int
     date: str
@@ -56,36 +53,3 @@ class ReviewResponse(BaseModel):
 
     class Config:
         orm_mode = True
-
-
-#===AI APIS===
-class CreateAiApi(BaseModel):
-    name: str
-    url: str
-
-
-class AiApiResponse(BaseModel):
-    id: int
-    name: str
-    url: str
-
-    class Config:
-        orm_mode = True
-
-
-#===AI API MODELS===
-class CreateAiApiModel(BaseModel):
-    ai_api_id: int
-    name: str
-
-
-class AiApiModelResponse(BaseModel):
-    id: int
-    ai_api_id: int
-    name: str
-
-    class Config:
-        orm_mode = True
-
-
-
