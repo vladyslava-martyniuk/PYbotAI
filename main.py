@@ -1,18 +1,48 @@
-from fastapi import FastAPI, Form, Depends, Request, HTTPException
+from fastapi import FastAPI, Form, Depends, Request, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash, check_password_hash
 from pydantic import BaseModel
+
+import os
+import dotenv
 from datetime import date
+
 
 from base import Base, engine, get_db
 from models.models_users import User, Review
 from models.models_ai import AiApi, AiApiModel
 from pydantic_models.users_roles_reviews import UserResponse, RoleResponse, ReviewResponse
 from pydantic_models.ai_models import AiApiResponse, AiApiModelResponse
+
+from utils.auth_utils import jwt, create_token
+
+
+# === Налаштування JWT ===
+dotenv.load_dotenv()
+
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+COOKIE_NAME = "access_token"
+
+if not SECRET_KEY:
+    raise ValueError("JWT_SECRET_KEY не встановлений")
+
+
+async def get_current_user(request: Request):
+    token = request.cookies.get(COOKIE_NAME)
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload.get("sub")
+    except Exception as e:
+        print(f"JWT Decode error: {e}")
+        return None
+
 
 # === Сервіси ШІ ===
 from services.openAi_service import OpenAiService
@@ -105,7 +135,18 @@ def register_user(username: str = Form(...), password: str = Form(...), db: Sess
     db.add(user)
     db.commit()
     db.refresh(user)
-    return JSONResponse({"message": "Користувача створено"})
+    token = create_token(user.username)
+
+    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        httponly=True,
+        samesite="lax",
+        secure=False
+    )
+    return response
 
 # ==================== LOGIN ====================
 @app.post("/login")
@@ -123,8 +164,28 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
     """
     user = db.query(User).filter(User.username == username).first()
     if not user or not check_password_hash(user.password, password):
-        return JSONResponse(status_code=400, content={"detail": "Неправильний логін або пароль"})
-    return JSONResponse({"message": "Вхід успішний", "username": username})
+        raise HTTPException(status_code=401, detail="Неправильний логін або пароль")
+    token = create_token(user.username)
+
+    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        httponly=True,
+        samesite="lax",
+        secure=False
+    )
+
+    return response
+
+
+# ================= LOGOUT =================
+@app.get("/logout")
+def logout():
+    response = RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+    response.delete_cookie(COOKIE_NAME)
+    return response
 
 # ==================== CRUD USERS ====================
 @app.post("/users")
