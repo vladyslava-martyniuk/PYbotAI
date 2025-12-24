@@ -29,7 +29,11 @@ templates = Jinja2Templates(directory="templates")
 Base.metadata.create_all(bind=engine)
 
 COOKIE_NAME = "access_token"
-
+@app.startup()
+def startup():
+    app.state.openai_service = OpenAI()
+    app.state.groq_service = Groq()
+    app.state.gemini_service = Gemini()
 # ==================== MODELS ====================
 class LoginRequest(BaseModel):
     username: str
