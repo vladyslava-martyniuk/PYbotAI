@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash, check_password_hash
 from pydantic import BaseModel
-
+from jose import jwt
 import os
 import dotenv
 from datetime import date

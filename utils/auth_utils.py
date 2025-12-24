@@ -2,16 +2,14 @@ from jose import jwt
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
 import os
-import dotenv
+from dotenv import load_dotenv
 
-dotenv.load_dotenv()
+load_dotenv()  
 
-SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-COOKIE_NAME = "access_token"
-
-if not SECRET_KEY:
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not JWT_SECRET_KEY:
     raise ValueError("JWT_SECRET_KEY не встановлений")
+
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

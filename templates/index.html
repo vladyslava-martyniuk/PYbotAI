@@ -50,7 +50,7 @@
         <div class="ai-box">
             <h4>OpenAI</h4>
             <div class="ai-chat" id="openaiChat"></div> 
-            <select name="" id="openaiModel">
+            <select name="" id="openaiModel"style="margin-bottom: 10px;">
                 {% for model in openai_models %}
                  <option value="{{model}}">{{model}}</option>
                 {% endfor %}
@@ -63,7 +63,7 @@
         <div class="ai-box">
             <h4>Groq</h4>
             <div class="ai-chat" id="groqChat"></div> 
-            <select name="" id="groqModel">
+            <select name="" id="groqModel" style="margin-bottom: 10px;">
                {% for model in groq_models %}
                  <option value="{{model}}">{{model}}</option>
                 {% endfor %}
@@ -76,7 +76,7 @@
         <div class="ai-box">
             <h4>Gemini</h4>
             <div class="ai-chat" id="geminiChat"></div> 
-            <select name="" id="geminiModel">
+            <select name="" id="geminiModel" style="margin-bottom: 10px;">
                 {% for model in gemini_models %}
                  <option value="{{model}}">{{model}}</option>
                 {% endfor %}
