@@ -1,58 +1,21 @@
-from fastapi import FastAPI, Form, Depends, Request, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Request, Form
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash, check_password_hash
 from pydantic import BaseModel
-from jose import jwt
-import os
-import dotenv
-from datetime import date
-
-
+from utils.auth_utils import create_token
 from base import Base, engine, get_db
-from models.models_users import User, Review
-from models.models_ai import AiApi, AiApiModel
-from pydantic_models.users_roles_reviews import UserResponse, RoleResponse, ReviewResponse
-from pydantic_models.ai_models import AiApiResponse, AiApiModelResponse
+from models.models_users import User
+from dotenv import load_dotenv
 
-from utils.auth_utils import jwt, create_token
+load_dotenv()
 
-
-# === Налаштування JWT ===
-dotenv.load_dotenv()
-
-SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-COOKIE_NAME = "access_token"
-
-if not SECRET_KEY:
-    raise ValueError("JWT_SECRET_KEY не встановлений")
-
-
-async def get_current_user(request: Request):
-    token = request.cookies.get(COOKIE_NAME)
-    if not token:
-        return None
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        return payload.get("sub")
-    except Exception as e:
-        print(f"JWT Decode error: {e}")
-        return None
-
-
-# === Сервіси ШІ ===
-from services.openAi_service import OpenAiService
-from services.groq_service import GroqService
-from services.gemini_service import GeminiService
-
-# === FastAPI ===
+# === FastAPI setup ===
 app = FastAPI(title="PyBotAi")
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -61,84 +24,46 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Статика та шаблони
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-
-# === База ===
 Base.metadata.create_all(bind=engine)
 
-# ==================== Startup ====================
-@app.on_event("startup")
-def startup_event():
-    """
-    Ініціалізація сервісів ШІ та бази даних при старті додатку.
+COOKIE_NAME = "access_token"
 
-    - Ініціалізує OpenAI, Groq та Gemini сервіси.
-    - Створює базові записи AiApi та AiApiModel, якщо вони відсутні.
-    """
-    app.state.openai_service = OpenAiService()
-    app.state.groq_service = GroqService()
-    app.state.gemini_service = GeminiService()
+# ==================== MODELS ====================
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
-    db: Session = next(get_db())
-    try:
-        if db.query(AiApi).count() == 0:
-            openai_api = AiApi(name="OpenAI", url="https://api.openai.com")
-            groq_api = AiApi(name="Groq", url="https://api.groq.com")
-            gemini_api = AiApi(name="Gemini", url="https://api.gemini.com")
-            db.add_all([openai_api, groq_api, gemini_api])
-            db.commit()
-
-            db.add_all([
-                AiApiModel(name="openai", ai_api_id=openai_api.id),
-                AiApiModel(name="groq", ai_api_id=groq_api.id),
-                AiApiModel(name="gemini", ai_api_id=gemini_api.id)
-            ])
-            db.commit()
-    finally:
-        db.close()
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    email: str
+    age: int = 18
 
 # ==================== INDEX ====================
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    """
-    Головна сторінка додатку.
-
-    Args:
-        request (Request): HTTP-запит
-
-    Returns:
-        HTMLResponse: HTML-шаблон головної сторінки
-    """
     return templates.TemplateResponse("index.html", {"request": request})
 
 # ==================== REGISTER ====================
 @app.post("/register")
-def register_user(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
-    """
-    Реєстрація нового користувача.
-
-    Args:
-        username (str): Ім'я користувача
-        password (str): Пароль
-        db (Session): Сесія бази даних
-
-    Returns:
-        JSONResponse: Повідомлення про успішну реєстрацію або помилку
-    """
-    if db.query(User).filter(User.username == username).first():
+def register_user(data: RegisterRequest, db: Session = Depends(get_db)):
+    if db.query(User).filter(User.username == data.username).first():
         return JSONResponse(status_code=400, content={"message": "Користувач вже існує"})
-
-    hashed = generate_password_hash(password)
-    user = User(username=username, password=hashed, email=f"{username}@test.com", age=18, role_id=1)
+    hashed = generate_password_hash(data.password)
+    user = User(
+        username=data.username,
+        password=hashed,
+        email=data.email,
+        age=data.age,
+        role_id=1
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
     token = create_token(user.username)
-
-    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-
+    response = JSONResponse({"message": f"Користувача {data.username} створено"})
     response.set_cookie(
         key=COOKIE_NAME,
         value=token,
@@ -150,25 +75,12 @@ def register_user(username: str = Form(...), password: str = Form(...), db: Sess
 
 # ==================== LOGIN ====================
 @app.post("/login")
-def login_user(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
-    """
-    Логін користувача.
-
-    Args:
-        username (str): Ім'я користувача
-        password (str): Пароль
-        db (Session): Сесія бази даних
-
-    Returns:
-        JSONResponse: Повідомлення про успішний вхід або помилку
-    """
-    user = db.query(User).filter(User.username == username).first()
-    if not user or not check_password_hash(user.password, password):
+def login_user(data: LoginRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.username == data.username).first()
+    if not user or not check_password_hash(user.password, data.password):
         raise HTTPException(status_code=401, detail="Неправильний логін або пароль")
     token = create_token(user.username)
-
-    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-
+    response = JSONResponse({"message": f"Вхід успішний, {data.username}"})
     response.set_cookie(
         key=COOKIE_NAME,
         value=token,
@@ -176,16 +88,15 @@ def login_user(username: str = Form(...), password: str = Form(...), db: Session
         samesite="lax",
         secure=False
     )
-
     return response
 
-
-# ================= LOGOUT =================
+# ==================== LOGOUT ====================
 @app.get("/logout")
 def logout():
-    response = RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+    response = JSONResponse({"message": "Вихід виконано"})
     response.delete_cookie(COOKIE_NAME)
     return response
+
 
 # ==================== CRUD USERS ====================
 @app.post("/users")
