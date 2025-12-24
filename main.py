@@ -7,6 +7,9 @@ from sqlalchemy.orm import Session
 from werkzeug.security import generate_password_hash, check_password_hash
 from pydantic import BaseModel
 from utils.auth_utils import create_token
+from services.openAi_service import OpenAiService
+from services.groq_service import GroqService
+from services.gemini_service import GeminiService
 from base import Base, engine, get_db
 from models.models_users import User
 from dotenv import load_dotenv
@@ -29,11 +32,11 @@ templates = Jinja2Templates(directory="templates")
 Base.metadata.create_all(bind=engine)
 
 COOKIE_NAME = "access_token"
-@app.startup()
+@app.on_event("startup")
 def startup():
-    app.state.openai_service = OpenAI()
-    app.state.groq_service = Groq()
-    app.state.gemini_service = Gemini()
+    app.state.openai_service = OpenAiService()
+    app.state.groq_service = GroqService()
+    app.state.gemini_service = GeminiService()
 # ==================== MODELS ====================
 class LoginRequest(BaseModel):
     username: str
