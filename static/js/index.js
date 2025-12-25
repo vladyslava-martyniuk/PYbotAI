@@ -1,259 +1,214 @@
-// =================== Елементи ===================
-const loginBtn = document.getElementById("loginBtn");
-const registerBtn = document.getElementById("registerBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-const loginBox = document.getElementById("loginBox");
-const registerBox = document.getElementById("registerBox");
-const greetingDiv = document.getElementById("greeting");
-const chatInput = document.getElementById("chatInput");
-const sendButton = document.getElementById("sendMsg");
-const chatHistoryUser = document.getElementById("chatHistoryUser");
+document.addEventListener("DOMContentLoaded", () => {
+    // =================== Елементи ===================
+    const loginBtn = document.getElementById("loginBtn");
+    const registerBtn = document.getElementById("registerBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
 
-// =================== Показ/сховування форм ===================
-loginBtn.onclick = () => loginBox.style.display = loginBox.style.display === "none" ? "block" : "none";
-registerBtn.onclick = () => registerBox.style.display = registerBox.style.display === "none" ? "block" : "none";
+    const loginBox = document.getElementById("loginBox");
+    const registerBox = document.getElementById("registerBox");
+    const greetingDiv = document.getElementById("greeting");
 
-// =================== Перевірка при завантаженні ===================
-window.addEventListener("load", () => {
+    const chatInput = document.getElementById("chatInput");
+    const sendButton = document.getElementById("sendMsg");
+    const chatHistoryUser = document.getElementById("chatHistoryUser");
+
+    // =================== Показ / сховування форм ===================
+    loginBtn.onclick = () => loginBox.style.display = loginBox.style.display === "none" ? "block" : "none";
+    registerBtn.onclick = () => registerBox.style.display = registerBox.style.display === "none" ? "block" : "none";
+
+    // =================== Перевірка при завантаженні ===================
     const nickname = localStorage.getItem("userNickname");
     if (nickname) {
         greetingDiv.innerText = `Привіт, ${nickname}!`;
         loginBox.style.display = "none";
         registerBox.style.display = "none";
     }
-});
 
-// =================== Реєстрація ===================
-document.getElementById("doRegister").onclick = async () => {
-    const username = document.getElementById("regUsername").value.trim();
-    const password = document.getElementById("regPassword").value.trim();
-    const email = document.getElementById("regEmail").value.trim();
-    const ageValue = document.getElementById("regAge").value;
-    const age = ageValue ? parseInt(ageValue) : null;
+    // =================== Реєстрація ===================
+    document.getElementById("doRegister").onclick = async () => {
+        const username = document.getElementById("regUsername")?.value.trim();
+        const password = document.getElementById("regPassword")?.value.trim();
+        const email = document.getElementById("regEmail")?.value.trim();
+        const ageValue = document.getElementById("regAge")?.value;
+        const age = ageValue ? parseInt(ageValue) : null;
+        const resultDiv = document.getElementById("regResult");
 
-    const resultDiv = document.getElementById("regResult");
-
-    if (!username || !password || !email) {
-        resultDiv.innerText = "Будь ласка, заповніть логін, пароль та email";
-        resultDiv.style.color = "red";
-        return;
-    }
-
-    if (age !== null && age <= 0) {
-        resultDiv.innerText = "Вік має бути додатнім числом";
-        resultDiv.style.color = "red";
-        return;
-    }
-
-    // 🔹 Відправка JSON замість FormData
-    const payload = { username, password, email };
-    if (age !== null) payload.age = age;
-
-    try {
-        const res = await fetch("/register", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        const json = await res.json().catch(() => ({}));
-
-        if (res.ok) {
-            resultDiv.innerText = typeof json.message === "string" ? json.message : JSON.stringify(json.message, null, 2);
-            resultDiv.style.color = "green";
-
-            setTimeout(async () => {
-                try {
-                    const usersRes = await fetch("/users");
-                    const users = await usersRes.json();
-                    const userExists = users.some(u => u.username === username);
-
-                    if (userExists) {
-                        alert(`Користувача ${username} успішно створено! ✅`);
-                        registerBox.style.display = "none";
-                        localStorage.setItem("userNickname", username);
-                        greetingDiv.innerText = `Привіт, ${username}!`;
-                    } else {
-                        alert(`Користувача ${username} не знайдено ❌`);
-                    }
-                } catch (e) {
-                    console.log("Помилка перевірки users:", e);
-                }
-            }, 500);
-
-        } else {
-            resultDiv.innerText = json.message || json.detail || "Помилка";
+        if (!username || !password || !email) {
+            resultDiv.innerText = "Заповніть логін, пароль та email";
             resultDiv.style.color = "red";
+            return;
         }
-    } catch (e) {
-        resultDiv.innerText = "Помилка сервера";
-        resultDiv.style.color = "red";
-        console.log("Register error:", e);
-    }
-};
 
-// =================== Логін ===================
-document.getElementById("doLogin").onclick = async () => {
-    const username = document.getElementById("loginUsername").value.trim();
-    const password = document.getElementById("loginPassword").value.trim();
-    const resultDiv = document.getElementById("loginResult");
+        const payload = { username, password, email };
+        if (age !== null && age > 0) payload.age = age;
 
-    if (!username || !password) {
-        resultDiv.innerText = "Будь ласка, введіть логін та пароль";
-        resultDiv.style.color = "red";
-        return;
-    }
+        try {
+            const res = await fetch("/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
 
-    try {
-        // 🔹 Відправка JSON замість URLSearchParams
-        const res = await fetch("/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password }),
-            redirect: "manual"
-        });
-
-        if (res.status === 200 || res.status === 303) {
-            localStorage.setItem("userNickname", username);
-            greetingDiv.innerText = `Привіт, ${username}!`;
-            loginBox.style.display = "none";
-            resultDiv.innerText = "Успішний вхід ✅";
-            resultDiv.style.color = "green";
-        } else {
             const json = await res.json().catch(() => ({}));
-            resultDiv.innerText = json.detail || json.message || "Помилка логіну ❌";
+            resultDiv.innerText = json.message || "Готово";
+            resultDiv.style.color = res.ok ? "green" : "red";
+
+            if (res.ok) {
+                localStorage.setItem("userNickname", username);
+                greetingDiv.innerText = `Привіт, ${username}!`;
+                registerBox.style.display = "none";
+            }
+        } catch {
+            resultDiv.innerText = "Помилка сервера";
             resultDiv.style.color = "red";
         }
-    } catch (e) {
-        resultDiv.innerText = "Помилка сервера ❌";
-        resultDiv.style.color = "red";
-        console.log("Login error:", e);
-    }
-};
+    };
 
-// =================== Вихід ===================
-logoutBtn.onclick = async () => {
-    localStorage.removeItem("userNickname");
-    greetingDiv.innerText = "";
-    loginBox.style.display = "block";
-    registerBox.style.display = "none";
+    // =================== Логін ===================
+    document.getElementById("doLogin").onclick = async () => {
+        const username = document.getElementById("loginUsername")?.value.trim();
+        const password = document.getElementById("loginPassword")?.value.trim();
+        const resultDiv = document.getElementById("loginResult");
 
-    try {
-        await fetch("/logout");
-        alert("Ви вийшли з облікового запису.");
-    } catch {
-        console.log("Помилка при logout");
-    }
-};
+        if (!username || !password) {
+            resultDiv.innerText = "Введіть логін і пароль";
+            resultDiv.style.color = "red";
+            return;
+        }
 
-// =================== Чат ====================
-sendButton.onclick = async () => {
-    const message = chatInput.value.trim();
-    if (!message) return;
+        try {
+            const res = await fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
 
-    addUserMessage(message);
+            if (res.ok) {
+                localStorage.setItem("userNickname", username);
+                greetingDiv.innerText = `Привіт, ${username}!`;
+                loginBox.style.display = "none";
+                resultDiv.innerText = "Успішний вхід ✅";
+                resultDiv.style.color = "green";
+            } else {
+                resultDiv.innerText = "Помилка логіну";
+                resultDiv.style.color = "red";
+            }
+        } catch {
+            resultDiv.innerText = "Помилка сервера";
+            resultDiv.style.color = "red";
+        }
+    };
 
-    const services = ["openai", "groq", "gemini"];
-    for (const service of services) {
+    // =================== Вихід ===================
+    logoutBtn.onclick = async () => {
+        localStorage.removeItem("userNickname");
+        greetingDiv.innerText = "";
+        loginBox.style.display = "block";
+        registerBox.style.display = "none";
+        await fetch("/logout").catch(() => {});
+    };
+
+    // =================== Чат ===================
+    sendButton.onclick = async () => {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        addUserMessage(message);
+
+        for (const service of ["openai", "gemini"]) {
+            await sendToAI(service, message);
+        }
+
+        chatInput.value = "";
+    };
+
+    window.sendSingle = async function(service) {
+        const input = document.getElementById(`${service}Input`);
+        if (!input) return;
+        const message = input.value.trim();
+        if (!message) return;
+
+        addUserMessage(`[${service.toUpperCase()}] ${message}`);
         await sendToAI(service, message);
+
+        input.value = "";
+    };
+
+    async function sendToAI(service, message) {
+        const chatDiv = document.getElementById(`${service}Chat`);
+        if (!chatDiv) return;
+
+        const botDiv = document.createElement("div");
+        botDiv.className = "bot-message";
+        botDiv.innerText = "⏳ Думає...";
+        chatDiv.appendChild(botDiv);
+
+        try {
+            const res = await fetch("/send_message", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query: message, service })
+            });
+
+            const json = await res.json();
+            botDiv.innerText =
+                typeof json.result === "string"
+                    ? json.result
+                    : JSON.stringify(json.result, null, 2);
+
+            // ✅ Фідбеки повернуті
+            addFeedback(botDiv, service);
+
+        } catch {
+            botDiv.innerText = "Помилка сервера";
+            addFeedback(botDiv, service);
+        }
+
+        chatDiv.scrollTop = chatDiv.scrollHeight;
     }
 
-    chatInput.value = "";
-};
-
-async function sendSingle(service) {
-    const input = document.getElementById(`${service}Input`);
-    const modelSelect = document.getElementById(`${service}Model`);
-    const model = modelSelect.value;
-    const message = input.value.trim();
-    if (!message) return;
-
-    addUserMessage(`[${service.toUpperCase()}] ${message}`);
-    await sendToAI(service, message, model);
-
-    input.value = "";
-}
-
-async function sendToAI(service, message, model) {
-    const chatDiv = document.getElementById(`${service}Chat`);
-    const botDiv = document.createElement("div");
-    botDiv.className = "bot-message";
-    botDiv.innerText = "⏳ Думає...";
-    chatDiv.appendChild(botDiv);
-
-    try {
-        const res = await fetch("/send_message", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: message, service: service, model: model })
-        });
-        const json = await res.json();
-
-        // ✅ Виправлення: завжди рядок
-        botDiv.innerText = (typeof json.result === "string") ? json.result : JSON.stringify(json.result, null, 2);
-
-        addFeedback(botDiv, service);
-    } catch {
-        botDiv.innerText = "Помилка сервера";
-        addFeedback(botDiv, service);
+    // =================== Повідомлення користувача ===================
+    function addUserMessage(text) {
+        const nickname = localStorage.getItem("userNickname") || "Гість";
+        const div = document.createElement("div");
+        div.className = "user-message";
+        div.innerText = `${nickname}: ${text}`;
+        chatHistoryUser.appendChild(div);
+        chatHistoryUser.scrollTop = chatHistoryUser.scrollHeight;
     }
 
-    chatDiv.scrollTop = chatDiv.scrollHeight;
-}
+    // =================== Фідбеки ===================
+    function addFeedback(botDiv, service) {
+        const feedbackDiv = document.createElement("div");
+        feedbackDiv.className = "feedback";
+        feedbackDiv.style.marginTop = "5px";
+        feedbackDiv.style.fontSize = "12px";
+        feedbackDiv.style.color = "gray";
 
-// =================== Фідбек ===================
-function addFeedback(botDiv, service) {
-    const feedbackDiv = document.createElement("div");
-    feedbackDiv.style.margin = "5px";
+        const thumbsUp = document.createElement("button");
+        thumbsUp.innerText = "👍";
+        thumbsUp.style.marginRight = "5px";
 
-    const thumbsUp = document.createElement("button");
-    thumbsUp.innerText = "👍";
-    thumbsUp.style.marginRight = "5px";
-    thumbsUp.onclick = () => sendFeedback(service, botDiv, "like");
+        const thumbsDown = document.createElement("button");
+        thumbsDown.innerText = "👎";
 
-    const thumbsDown = document.createElement("button");
-    thumbsDown.innerText = "👎";
-    thumbsDown.onclick = () => sendFeedback(service, botDiv, "dislike");
+        thumbsUp.onclick = () => {
+            thumbsUp.style.backgroundColor = "lightgreen";
+            thumbsDown.style.backgroundColor = "";
+        };
 
-    feedbackDiv.appendChild(thumbsUp);
-    feedbackDiv.appendChild(thumbsDown);
-    botDiv.appendChild(feedbackDiv);
-}
+        thumbsDown.onclick = () => {
+            thumbsDown.style.backgroundColor = "salmon";
+            thumbsUp.style.backgroundColor = "";
+        };
 
-async function sendFeedback(service, botDiv, type) {
-    const username = localStorage.getItem("userNickname");
-    if (!username) {
-        alert("Щоб залишити фідбек, потрібно увійти");
-        return;
+        feedbackDiv.appendChild(thumbsUp);
+        feedbackDiv.appendChild(thumbsDown);
+        botDiv.appendChild(feedbackDiv);
     }
 
-    try {
-        await fetch("/review", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ service: service, score: type === "like" ? 5 : 1 })
-        });
-        botDiv.querySelectorAll("button").forEach(b => b.disabled = true);
-        const msgDiv = document.createElement("div");
-        msgDiv.style.fontStyle = "italic";
-        msgDiv.style.color = "green";
-        msgDiv.innerText = "Ваш відгук зараховано ✅";
-        botDiv.appendChild(msgDiv);
-    } catch (e) {
-        alert("Помилка при відправці фідбеку");
-    }
-}
-
-// =================== Повідомлення користувача ===================
-function addUserMessage(text) {
-    const nickname = localStorage.getItem("userNickname") || "Гість";
-    const div = document.createElement("div");
-    div.className = "user-message";
-    div.innerText = `${nickname}: ${text}`;
-    chatHistoryUser.appendChild(div);
-}
-
-// Відправка по Enter для спільного інпуту
-chatInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") sendButton.click();
+    // =================== Надсилання по Enter ===================
+    chatInput.addEventListener("keypress", e => {
+        if (e.key === "Enter") sendButton.click();
+    });
 });
