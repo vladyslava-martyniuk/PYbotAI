@@ -119,7 +119,7 @@ input:focus {
 /* ================= AI BLOCKS ================= */
 #aiResponses {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 16px;
 }
 
@@ -131,6 +131,7 @@ input:focus {
     border: 1px solid var(--border);
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 .ai-box h4 {

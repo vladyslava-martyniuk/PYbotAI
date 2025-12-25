@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pydantic import BaseModel
 from utils.auth_utils import create_token
 from services.openAi_service import OpenAiService
-from services.groq_service import GroqService
+# from services.groq_service import GroqService
 from services.gemini_service import GeminiService
 from base import Base, engine, get_db
 from models.models_users import User
@@ -35,7 +35,7 @@ COOKIE_NAME = "access_token"
 @app.on_event("startup")
 def startup():
     app.state.openai_service = OpenAiService()
-    app.state.groq_service = GroqService()
+    # app.state.groq_service = GroqService()
     app.state.gemini_service = GeminiService()
 # ==================== MODELS ====================
 class LoginRequest(BaseModel):
@@ -223,7 +223,7 @@ def send_message_ai(request: AIRequest):
     """
     service_map = {
         "openai": app.state.openai_service,
-        "groq": app.state.groq_service,
+        # "groq": app.state.groq_service,
         "gemini": app.state.gemini_service
     }
     service = service_map.get(request.service.lower())
